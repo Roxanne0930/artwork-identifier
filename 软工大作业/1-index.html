@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>AAA美术馆导览</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#8B4513',  // 棕色
+                        secondary: '#B22222',  // 红色
+                        neutral: {
+                            100: '#F5F7FA',
+                            200: '#E4E6EB',
+                            300: '#C9CDD4',
+                            400: '#86909C',
+                            500: '#4E5969',
+                            600: '#272E3B',
+                            700: '#1D2129',
+                        }
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <!-- 自定义工具类 -->
+    <style type="text/css">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .btn-hover {
+                @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .backdrop-blur-sm {
+                backdrop-filter: blur(4px);
+            }
+        }
+    </style>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        /* 全屏背景容器 */
+        .bg-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        /* 背景图片 */
+        .bg-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            filter: brightness(0.9) saturate(1.1);
+        }
+        
+        /* 半透明覆盖层，增强内容可读性 */
+        .bg-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .bg-gradient-red {
+            background: linear-gradient(135deg, #8B4513 0%, #B22222 100%);
+        }
+        
+        .text-gradient {
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            background-image: linear-gradient(135deg, #8B4513 0%, #B22222 100%);
+        }
+        
+        /* 下拉菜单样式 */
+        .dropdown {
+            position: relative;
+            z-index: 99999;
+        }
+        
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            z-index: 99999;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            border-radius: 0.5rem;
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+            margin-top: 0;
+            transform: translateX(-1rem);
+            padding: 0.5rem 0;
+            left: 0;
+        }
+
+        .dropdown-content-right {
+            left: auto;
+            right: 0; /* 向右显示 */
+            transform: translateX(1rem); /* 向右偏移 */
+        }
+        
+        .dropdown-item {
+            display: block;
+            padding: 0.75rem 1.5rem;
+            text-decoration: none;
+            color: #070707;
+            transition: all 0.2s ease;
+        }
+        
+        .dropdown-item:hover {
+            background-color: rgba(139, 69, 19, 0.1);
+            color: #8B4513;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 relative">
+    <!-- 背景图片容器 -->
+    <div class="bg-container">
+        <img src="图片集/清明上河图.jpg" alt="清明上河图" class="bg-image">
+        <div class="bg-overlay"></div>
+    </div>
+    
+    <!-- 时间显示 -->
+    <div class="text-neutral-700 text-sm md:text-base mb-3 tracking-wide font-medium backdrop-blur-sm bg-white/60 px-4 py-1 rounded-full">
+        <span id="current-time">加载中...</span>
+    </div>
+    
+    <!-- 欢迎信息 -->
+    <div class="text-center mb-6 bg-white/80 backdrop-blur-sm p-6 rounded-xl shadow-lg">
+        <h1 class="text-[clamp(1.8rem,5vw,2.5rem)] font-bold text-neutral-700 mb-2 text-shadow">
+            您好！欢迎来到<span class="text-gradient">AAA</span>
+        </h1>
+        <p class="text-[clamp(1.2rem,3vw,1.5rem)] text-neutral-600 font-medium">您正在参观</p>
+    </div>
+    
+    <!-- 一键识图按钮 -->
+    <div class="w-full max-w-md mb-6">
+        <div class="card-hover bg-white/90 backdrop-blur-sm rounded-xl shadow-md overflow-hidden cursor-not-allowed opacity-70 border border-white/60">
+            <div class="h-40 bg-neutral-100 flex items-center justify-center">
+                <i class="fa-solid fa-camera text-6xl text-primary"></i>
+            </div>
+            <div class="p-6">
+                <h3 class="text-xl font-semibold text-neutral-700 mb-1">一键识图</h3>
+                <p class="text-neutral-500 text-sm">您的专属讲解员上线啦</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 功能按钮网格 -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-3xl w-full">
+        <!-- 博物馆/美术馆按钮 - 带下拉菜单 -->
+        <div class="dropdown card-hover bg-white/90 backdrop-blur-sm rounded-xl shadow-md border border-white/60 cursor-pointer" id="dropdown-container-1">
+            <div class="h-40 bg-primary/10 flex items-center justify-center">
+                <i class="fa-solid fa-building-columns text-6xl text-primary"></i>
+            </div>
+            <div class="p-6">
+                <h3 class="text-xl font-semibold text-neutral-700 mb-1">博物馆/美术馆</h3>
+                <p class="text-neutral-500 text-sm">探索世界各地艺术珍藏</p>
+            </div>
+            
+            <!-- 下拉菜单 -->
+            <div class="dropdown-content" id="dropdown-menu-1">
+                <a href="https://www.louvre.fr/" target="_blank" class="dropdown-item">
+                    <i class="fa-solid fa-chevron-right mr-2 text-primary/70"></i> 卢浮宫
+                </a>
+                <a href="https://www.britishmuseum.org/" target="_blank" class="dropdown-item">
+                    <i class="fa-solid fa-chevron-right mr-2 text-primary/70"></i> 大英博物馆
+                </a>
+                <a href="https://www.dpm.org.cn/" target="_blank" class="dropdown-item">
+                    <i class="fa-solid fa-chevron-right mr-2 text-primary/70"></i> 故宫博物院
+                </a>
+                <a href="https://www.namoc.org/" target="_blank" class="dropdown-item">
+                    <i class="fa-solid fa-chevron-right mr-2 text-primary/70"></i> 中国美术馆
+                </a>
+            </div>
+        </div>
+        
+        <!-- 名人/作者按钮 - 带下拉菜单 -->
+        <div class="dropdown card-hover bg-white/90 backdrop-blur-sm rounded-xl shadow-md border border-white/60 cursor-pointer" id="dropdown-container-2">
+            <div class="h-40 bg-primary/10 flex items-center justify-center">
+                <i class="fa-solid fa-user text-6xl text-primary"></i>
+            </div>
+            <div class="p-6">
+                <h3 class="text-xl font-semibold text-neutral-700 mb-1">名人/作者</h3>
+                <p class="text-neutral-500 text-sm">徜徉个人艺术星空</p>
+            </div>
+            
+            <!-- 下拉菜单 -->
+            <div class="dropdown-content dropdown-content-right" id="dropdown-menu-2">
+                <a href="https://www.wikiart.org/zh/lie-ao-na-duo-da-fen-qi" target="_blank" class="dropdown-item">
+                    <i class="fa-solid fa-chevron-right mr-2 text-primary/70"></i> 达芬奇
+                </a>
+                <a href="https://www.wikiart.org/zh/mi-kai-lang-ji-luo" target="_blank" class="dropdown-item">
+                    <i class="fa-solid fa-chevron-right mr-2 text-primary/70"></i> 米开朗基罗
+                </a>
+                <a href="https://www.wikiart.org/zh/qi-bai-shi" target="_blank" class="dropdown-item">
+                    <i class="fa-solid fa-chevron-right mr-2 text-primary/70"></i> 齐白石
+                </a>
+                <a href="https://www.wikiart.org/zh/xu-bei-hong" target="_blank" class="dropdown-item">
+                    <i class="fa-solid fa-chevron-right mr-2 text-primary/70"></i> 徐悲鸿
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const dropdownContainer1 = document.getElementById('dropdown-container-1');
+        const dropdownMenu1 = document.getElementById('dropdown-menu-1');
+
+        dropdownContainer1.addEventListener('mouseenter', function () {
+            dropdownMenu1.style.display = 'block';
+        });
+
+        dropdownContainer1.addEventListener('mouseleave', function () {
+            if (!dropdownMenu1.contains(event.relatedTarget)) {
+                dropdownMenu1.style.display = 'none';
+            }
+        });
+
+        dropdownMenu1.addEventListener('mouseenter', function () {
+            this.style.display = 'block';
+        });
+
+        dropdownMenu1.addEventListener('mouseleave', function () {
+            if (!dropdownContainer1.contains(event.relatedTarget)) {
+                dropdownMenu1.style.display = 'none';
+            }
+        });
+
+        const dropdownContainer2 = document.getElementById('dropdown-container-2');
+        const dropdownMenu2 = document.getElementById('dropdown-menu-2');
+
+        dropdownContainer2.addEventListener('mouseenter', function () {
+            dropdownMenu2.style.display = 'block';
+        });
+
+        dropdownContainer2.addEventListener('mouseleave', function (event) {
+            if (!dropdownMenu2.contains(event.relatedTarget)) {
+                dropdownMenu2.style.display = 'none';
+            }
+        });
+
+        dropdownMenu2.addEventListener('mouseenter', function () {
+            this.style.display = 'block';
+        });
+
+        dropdownMenu2.addEventListener('mouseleave', function (event) {
+            if (!dropdownContainer2.contains(event.relatedTarget)) {
+                dropdownMenu2.style.display = 'none';
+            }
+        });
+
+        // 更新当前时间
+        function updateTime() {
+            const now = new Date();
+            const options = { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric', 
+                weekday: 'long',
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            };
+            const timeString = now.toLocaleDateString('zh-CN', options);
+            document.getElementById('current-time').textContent = timeString;
+        }
+        
+        // 初始更新时间并设置定时器
+        updateTime();
+        setInterval(updateTime, 1000);
+    </script>
+</body>
+</html>
