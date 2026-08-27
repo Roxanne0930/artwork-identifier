@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>画家详情</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#8B4513',  // 棕色
+                        secondary: '#B22222',  // 红色
+                        neutral: {
+                            100: '#F5F7FA',
+                            200: '#E4E6EB',
+                            300: '#C9CDD4',
+                            400: '#86909C',
+                            500: '#4E5969',
+                            600: '#272E3B',
+                            700: '#1D2129',}
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .btn-hover {
+                @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+            }
+            .card-hover {
+                @apply transition-all duration-300 hover:shadow-xl hover:-translate-y-2;
+            }
+            .sidebar-item {
+                @apply py-3 px-4 rounded-lg cursor-pointer transition-all duration-200 hover:bg-primary/10 hover:text-primary;
+            }
+            .sidebar-item.active {
+                @apply bg-primary/10 text-primary font-medium;
+            }
+            .search-input {
+                @apply px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-300 w-full md:w-80;
+            }
+            .search-btn {
+                @apply ml-2 text-primary hover:text-primary/80 transition-colors duration-300;
+            }
+            .search-container {
+                @apply flex justify-center mb-8 md:mb-12;
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="font-inter bg-neutral text-dark min-h-screen flex flex-col">
+    <!-- 导航栏 -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-paint-brush text-primary text-2xl"></i>
+                <h1 class="text-xl font-bold text-primary">艺术探索</h1>
+            </div>
+            <nav class="hidden md:flex space-x-8">
+                <a href="index.html" class="text-dark hover:text-primary transition-colors duration-300">首页</a>
+                <a href="#" class="text-dark hover:text-primary transition-colors duration-300">关于我们</a>
+                <a href="#" class="text-dark hover:text-primary transition-colors duration-300">联系我们</a>
+            </nav>
+            <button class="md:hidden text-dark text-xl">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- 主要内容 -->
+    <main class="flex-grow container mx-auto px-4 py-12">
+        <div class="text-center mb-12">
+            <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-4 text-dark">画家详情</h2>
+            <p class="text-[clamp(1rem,1.5vw,1.1rem)] text-gray-600 max-w-2xl mx-auto">
+                探索全球著名画家的生平和代表作品
+            </p>
+            
+            <!-- 搜索框位于标题下方 -->
+            <div class="search-container">
+                <div class="flex items-center">
+                    <input type="text" id="wikipedia-search" class="search-input" placeholder="搜索艺术家...">
+                    <button id="search-btn" class="search-btn">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- 左侧边栏 -->
+            <div class="lg:w-1/4 bg-white rounded-xl shadow-md p-6 h-fit">
+                <h3 class="text-xl font-semibold mb-6 pb-4 border-b border-gray-100">画家分类</h3>
+                
+                <!-- 中国画家 -->
+                <div class="mb-6">
+                    <h4 class="font-medium text-gray-500 mb-3">中国画家</h4>
+                    <div class="space-y-1" id="chinese-artists">
+                        <div class="sidebar-item active" data-artist="qi-bai-shi">齐白石</div>
+                        <div class="sidebar-item" data-artist="zhang-da-qian">张大千</div>
+                        <div class="sidebar-item" data-artist="wu-zuo-ren">吴作人</div>
+                        <div class="sidebar-item" data-artist="pan-tian-shou">潘天寿</div>
+                        <div class="sidebar-item" data-artist="liu-hai-su">刘海粟</div>
+                    </div>
+                </div>
+                
+                <!-- 外国画家 -->
+                <div>
+                    <h4 class="font-medium text-gray-500 mb-3">外国画家</h4>
+                    <div class="space-y-1" id="western-artists">
+                        <div class="sidebar-item" data-artist="leonardo-da-vinci">列奥纳多·达·芬奇</div>
+                        <div class="sidebar-item" data-artist="pablo-picasso">巴勃罗·毕加索</div>
+                        <div class="sidebar-item" data-artist="vincent-van-gogh">文森特·梵·高</div>
+                        <div class="sidebar-item" data-artist="claude-monet">克劳德·莫奈</div>
+                        <div class="sidebar-item" data-artist="michelangelo">米开朗基罗</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧内容 -->
+            <div class="lg:w-3/4">
+                <!-- 画家详情卡片 -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden" id="artist-detail">
+                    <!-- 内容将通过JavaScript动态加载 -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <i class="fa-solid fa-paint-brush text-primary text-2xl"></i>
+                        <h3 class="text-xl font-bold">艺术探索</h3>
+                    </div>
+                    <p class="text-gray-400 text-sm">探索艺术的世界，发现美的真谛</p>
+                </div>
+
+                <div>
+                    <h4 class="font-semibold mb-4">快速链接</h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="index.html" class="hover:text-primary transition-colors duration-300">首页</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors duration-300">关于我们</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors duration-300">联系我们</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-semibold mb-4">功能</h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="#" class="hover:text-primary transition-colors duration-300">拍照识图</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors duration-300">美术馆/博物馆</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors duration-300">画家</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-semibold mb-4">关注我们</h4>
+                    <div class="flex space-x-4">
+                        <a href="#" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                            <i class="fa-brands fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                            <i class="fa-brands fa-twitter"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                            <i class="fa-brands fa-instagram"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-white/10 mt-8 pt-8 text-center text-gray-400 text-sm">
+                <p>&copy; 2025 艺术探索. 保留所有权利.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 画家数据
+        const artists = {
+            "qi-bai-shi": {
+                name: "齐白石",
+                birthDate: "1864年1月1日",
+                deathDate: "1957年9月16日",
+                nationality: "中国",
+                portrait: "https://bkimg.cdn.bcebos.com/pic/a1ec08fa513d269759eeeda41ca3a5fb43166c22728b?x-bce-process=image/format,f_auto/watermark,image_d2F0ZXIvYmFpa2UyNzI,g_7,xp_5,yp_5,P_20/resize,m_lfit,limit_1,h_1080",
+                background: "https://bkimg.cdn.bcebos.com/pic/3801213fb80e7bec54e7a291fd77ae389b504fc23d33?x-bce-process=image/format,f_auto/watermark,image_d2F0ZXIvYmFpa2UyNzI,g_7,xp_5,yp_5,P_20/resize,m_lfit,limit_1,h_1080",
+                description: `
+                    齐白石（1864年1月1日—1957年9月16日），原名纯芝，字渭青，号兰亭，后改名璜，字濒生，号白石、白石山翁、老萍、饿叟、借山吟馆主者、寄萍堂上老人、三百石印富翁，湖南湘潭人，中国近现代绘画大师。
+                    
+                    齐白石早年曾为木工，后以卖画为生，五十七岁后定居北京。擅画花鸟、虫鱼、山水、人物，笔墨雄浑滋润，色彩浓艳明快，造型简练生动，意境淳厚朴实。所作鱼虾虫蟹，天趣横生。
+                `,
+                works: [
+                    {
+                        name: "《虾》",
+                        type: "水墨纸本",
+                        image: "https://ts1.tc.mm.bing.net/th/id/R-C.364870d707dddd8e48172bfefe542c0b?rik=A9FerheC0aAMUQ&riu=http%3a%2f%2f5b0988e595225.cdn.sohucs.com%2fimages%2f20171220%2fef71334210904be295adc96100cc8c4b.jpeg&ehk=hIb7tNx8BLMYhn6hhooZsjv2IqmTwuUoTPB%2boEljLmA%3d&risl=&pid=ImgRaw&r=0"
+                    },
+                    {
+                        name: "《蛙声十里出山泉》",
+                        type: "水墨纸本",
+                        image: "https://ts1.tc.mm.bing.net/th/id/R-C.687cc07f533eb0999618ee564cc9b4dc?rik=o65%2fcl52tvaeTg&riu=http%3a%2f%2fp0.itc.cn%2fq_70%2fimages03%2f20200809%2f48cf7e79f9e04e75827ff8715e8e2a60.jpeg&ehk=taRP4mQo67TMR0hc0TanFLEuS5lg4SZPl4MAt9CvrMM%3d&risl=&pid=ImgRaw&r=0"
+                    },
+                    {
+                        name: "《松柏高立图·篆书四言联》",
+                        type: "设色纸本",
+                        image: "https://ts1.tc.mm.bing.net/th/id/R-C.0f3eacfc8415aa0cc484356516297da2?rik=imB5H%2fWWTC2Xkw&riu=http%3a%2f%2f5b0988e595225.cdn.sohucs.com%2fimages%2f20181106%2f61ecb3682b6e4d3e87f9c586637d70c7.jpeg&ehk=8YQV1Zu4jU46iq24tBMQ03Ze9%2bicPabT9z0Qak8c5xU%3d&risl=&pid=ImgRaw&r=0"
+                    }
+                ], 
+                links: {
+                    wikiart: "https://www.artincontext.org/artist-profiles/qi-baishi/",
+                    zhenbaoguan: "https://g2.ltfc.net/artist/5df8a8c65e3be25e694d7443?name=齐白石"
+                }
+            },
+            "zhang-da-qian": {
+                name: "张大千",
+                birthDate: "1899年5月10日",
+                deathDate: "1983年4月2日",
+                nationality: "中国",
+                portrait: "https://bkimg.cdn.bcebos.com/pic/d000baa1cd11728b471000fb3cb5d4cec3fdfd03869a?x-bce-process=image/format,f_auto/watermark,image_d2F0ZXIvYmFpa2UyNzI,g_7,xp_5,yp_5,P_20/resize,m_lfit,limit_1,h_1080",
+                background: "https://c-ssl.dtstatic.com/uploads/item/201506/08/20150608053628_tduwm.thumb.1000_0.jpeg",
+                description: `
+                    张大千（1899年5月10日—1983年4月2日），原名正权，后改名爰，字季爰，号大千，别号大千居士、下里港人，斋名大风堂。四川内江人，祖籍广东省番禺，是二十世纪中国画坛最具传奇色彩的泼墨画工。
+                    
+                    他早期专心研习古人书画，特别在山水画方面卓有成就。后旅居海外，画风工写结合，重彩、水墨融为一体，尤其是泼墨与泼彩，开创了新的艺术风格。
+                `,
+                works: [
+                    {
+                        name: "《长江万里图》",
+                        type: "设色纸本",
+                        image: "https://ts3.tc.mm.bing.net/th/id/OIP-C.o6vng5vPZtxKfpGDd0QetAHaCn?rs=1&pid=ImgDetMain"
+                    },
+                    {
+                        name: "《庐山图》",
+                        type: "泼墨泼彩",
+                        image: "https://ts1.tc.mm.bing.net/th/id/OIP-C.n4OygSL8sxIjKgGlgWbXOwHaEK?rs=1&pid=ImgDetMain"
+                    },
+                    {
+                        name: "《爱痕湖》",
+                        type: "设色纸本",
+                        image: "https://ts1.tc.mm.bing.net/th/id/R-C.cec65edcebf21a72c3bb01ddb42abb8f?rik=BTOQMeHRn%2fQ5Jg&riu=http%3a%2f%2fcmsapi.quanxi.cc%2fuploads%2fyijiao%2fuploads%2fallimg%2f151208%2f348-15120PT415-50.jpg&ehk=ARBi0Pp3ef5tLmx17lCkGx06eSONtrp2Q4z6jwkbdag%3d&risl=&pid=ImgRaw&r=0"
+                    }
+                ],
+                links: {
+                    wikiart: "https://www.wikiart.org/en/zhang-da-qian",
+                    zhenbaoguan: "https://g2.ltfc.net/artist/5df8a8c85e3be25e694d7530?name=张大千"
+                }
+            },
+            "wu-zuo-ren": {
+                name: "吴作人",
+                birthDate: "1908年11月3日",
+                deathDate: "1997年4月9日",
+                nationality: "中国",
+                portrait: "https://bkimg.cdn.bcebos.com/pic/e61190ef76c6a7efce1bd4efd7adb851f3deb58fc8f9?x-bce-process=image/format,f_auto/watermark,image_d2F0ZXIvYmFpa2UyNzI,g_7,xp_5,yp_5,P_20/resize,m_lfit,limit_1,h_1080",
+                background: "https://ts1.tc.mm.bing.net/th/id/R-C.596ac0f45e31fdd210b79bf7ed225ef8?rik=Z8BEIhL6%2fXX4dg&riu=http%3a%2f%2fp6.itc.cn%2fimages01%2f20210111%2f63330b6e422a498e97cc650de2e3ca4a.jpeg&ehk=WjXEe7pP2TM1BNMAnt8DmTrkFVMT9BQmZHja4mEZEZk%3d&risl=&pid=ImgRaw&r=0",
+                description: `
+                    吴作人（1908年11月3日—1997年4月9日），安徽泾县人，生于江苏苏州，中国画家，曾任中央美术学院院长。
+                    
+                    吴作人早年接受西式美术教育，后赴法国、比利时留学，回国后致力于融合中西艺术。他擅长油画和中国画，作品题材广泛，包括人物、风景和动物等。他的艺术风格既有西方绘画的严谨结构，又融入了中国传统艺术的韵味。
+                `,
+                works: [
+                    {
+                        name: "《藏原放牧》",
+                        type: "油画",
+                        image: "https://tse2-mm.cn.bing.net/th/id/OIP-C.a0EUjOunk-Xa70ohMUorJgHaGI?rs=1&pid=ImgDetMain"
+                    },
+                    {
+                        name: "《齐白石像》",
+                        type: "油画",
+                        image: "https://tse3-mm.cn.bing.net/th/id/OIP-C.gpGbOizWHDwSomuPGFm20QHaJ0?rs=1&pid=ImgDetMain"
+                    },
+                    {
+                        name: "《骆驼》",
+                        type: "水墨",
+                        image: "https://imgqnc.epailive.com/cloud_40_58978_25_1654493269697.jpg-m"
+                    }
+                ],
+                links: {
+                    wikiart: "https://www.artincontext.org/artist-profiles/wu-zuo-ren/",
+                    zhenbaoguan: "https://g2.ltfc.net/artist/5df8a8c85e3be25e694d754a?name=吴作人"
+                }
+            },
+            "pan-tian-shou": {
+                name: "潘天寿",
+                birthDate: "1897年3月14日",
+                deathDate: "1971年9月5日",
+                nationality: "中国",
+                portrait: "https://bkimg.cdn.bcebos.com/pic/3b87e950352ac65ccda5d0a9fbf2b21192138a4c?x-bce-process=image/format,f_auto/watermark,image_d2F0ZXIvYmFpa2UyNzI,g_7,xp_5,yp_5,P_20/resize,m_lfit,limit_1,h_1080",
+                background: "https://c-ssl.duitang.com/uploads/item/201201/05/20120105102844_CkSKQ.thumb.1000_0.jpg",
+                description: `
+                    潘天寿（1897年3月14日—1971年9月5日），原名天授，字大颐，自署阿寿、雷婆头峰寿者、寿者，浙江宁海人，中国现代画家、美术教育家。
+                    
+                    潘天寿的绘画风格以雄浑、豪放著称，尤擅写意花鸟和山水画。他注重画面的结构和气势，常以“造险”“破险”的手法营造独特的艺术境界。他的作品融合了中国传统绘画的精髓与个人的创新，对现代中国画的发展产生了深远影响。
+                `,
+                works: [
+                    {
+                        name: "《雁荡山花》",
+                        type: "设色纸本",
+                        image: "https://trueart-content.oss-cn-shanghai.aliyuncs.com/20190515/060045317_640.jpg"
+                    },
+                    {
+                        name: "《灵岩涧一角》",
+                        type: "水墨纸本",
+                        image: "https://pic.nximg.cn/2008-12-22/200812222127948_2.jpg"
+                    },
+                    {
+                        name: "《小龙湫下一角》",
+                        type: "设色纸本",
+                        image: "https://ts1.tc.mm.bing.net/th/id/R-C.f382285981311c64f84ca5397f15a3c5?rik=Te3nVHx6LGs6AQ&riu=http%3a%2f%2fk.sinaimg.cn%2fn%2fdfzqycs%2fcrawl%2f303%2fw550h553%2f20221205%2f19e9-eb892c208d1acb09110dbd8157eb70e5.png%2fw700h350z1l10t101a1.jpg&ehk=001InrZlXk%2boyVucIUjoVSMn7qgXv5bIkHIFmRVlek0%3d&risl=&pid=ImgRaw&r=0"
+                    }
+                ],
+                links: {
+                    wikiart: "https://www.wikiart.org/en/pan-tian-shou",
+                    zhenbaoguan: "https://g2.ltfc.net/artist/5df8a8c85e3be25e694d7549?name=潘天寿"
+                }
+            },
+            "liu-hai-su": {
+                name: "刘海粟",
+                birthDate: "1896年3月16日",
+                deathDate: "1994年8月7日",
+                nationality: "中国",
+                portrait: "https://bkimg.cdn.bcebos.com/pic/6f061d950a7b02087bf4091a648ee5d3572c10df628b?x-bce-process=image/format,f_auto/watermark,image_d2F0ZXIvYmFpa2UyNzI,g_7,xp_5,yp_5,P_20/resize,m_lfit,limit_1,h_1080",
+                background: "https://ts4.tc.mm.bing.net/th/id/OIP-C.YQEXYeU5vyKxeGSbFeVoHAHaOn?rs=1&pid=ImgDetMain",
+                description: `
+                    刘海粟（1896年3月16日—1994年8月7日），原名槃，字季芳，号海翁，江苏常州人，中国画家、美术教育家。
+                    
+                    刘海粟是中国现代美术教育的先驱之一，1912年在上海创办了中国第一所正规美术学校——上海图画美术院（后改名上海美术专科学校）。他率先在教学中采用人体模特，并因此受到保守势力的攻击。他的绘画风格融合了中西艺术，早期以油画为主，后期专注于中国画，尤其擅长山水和花卉。
+                `,
+                works: [
+                    {
+                        name: "《黄山云海》",
+                        type: "泼墨山水",
+                        image: "https://d.ifengimg.com/q100/img1.ugc.ifeng.com/newugc/20200828/11/wemedia/d18a0ec61725bc4fa074265300fb4a72190dc14a_size788_w1545_h1030.jpg"
+                    },
+                    {
+                        name: "《九溪十八涧》",
+                        type: "设色纸本",
+                        image: "https://ts2.tc.mm.bing.net/th/id/OIP-C.QBS0C7CtimaDVh0H5R9iSwHaO2?rs=1&pid=ImgDetMain"
+                    },
+                    {
+                        name: "《飞瀑图》",
+                        type: "水墨纸本",
+                        image: "https://tse3-mm.cn.bing.net/th/id/OIP-C.kAfGekrGNeqACk7nlM7trwHaJ4?rs=1&pid=ImgDetMain"
+                    }
+                ],
+                links: {
+                    wikiart: "https://www.artincontext.org/artist-profiles/liu-hai-su/",
+                    zhenbaoguan: "https://g2.ltfc.net/artist/5df8a8c75e3be25e694d74d5?name=刘海粟"
+                }
+            },
+            "leonardo-da-vinci": {
+                name: "列奥纳多·达·芬奇",
+                birthDate: "1452年4月15日",
+                deathDate: "1519年5月2日",
+                nationality: "意大利",
+                portrait: "https://bkimg.cdn.bcebos.com/pic/32fa828ba61ea8d3fd1fe2786143274e251f95caf23f?x-bce-process=image/format,f_auto/watermark,image_d2F0ZXIvYmFpa2UyNzI,g_7,xp_5,yp_5,P_20/resize,m_lfit,limit_1,h_1080",
+                background: "https://bkimg.cdn.bcebos.com/pic/738b4710b912c8fcc3ce238a2c508545d688d43f8b62?x-bce-process=image/format,f_auto/watermark,image_d2F0ZXIvYmFpa2UyNzI,g_7,xp_5,yp_5,P_20/resize,m_lfit,limit_1,h_1080",
+                description: `
+                    列奥纳多·达·芬奇（1452年4月15日—1519年5月2日），意大利文艺复兴时期的博学家，不仅是画家，还是雕刻家、建筑师、音乐家、数学家、工程师、发明家、解剖学家、地质学家、植物学家和作家。他与米开朗基罗和拉斐尔并称“文艺复兴三杰”。
+                    
+                    达·芬奇的绘画作品以细腻的笔触、精准的透视和神秘的氛围著称。他的代表作《蒙娜丽莎》以其神秘的微笑和精湛的绘画技巧成为世界上最著名的画作之一。他的另一幅杰作《最后的晚餐》则通过人物的姿态和表情传达了深刻的情感和戏剧张力。
+                `,
+                works: [
+                    {
+                        name: "《蒙娜丽莎》",
+                        type: "油彩、木板",
+                        image: "https://img.phb123.com/uploads/allimg/240201/800-240201113121-50.jpg"
+                    },
+                    {
+                        name: "《最后的晚餐》",
+                        type: "蛋彩、灰泥",
+                        image: "https://ts3.tc.mm.bing.net/th/id/OIP-C.K43cW0A9pZHzLN_Tmj930AHaDh?rs=1&pid=ImgDetMain"
+                    },
+                    {
+                        name: "《维特鲁威人》",
+                        type: "钢笔、墨水、纸",
+                        image: "https://cdn.sputniknews.cn/img/102982/64/1029826488_282:0:917:698_1920x0_80_0_0_efb01affe52ff639499f780ea1e9276f.jpg"
+                    }
+                ],
+                links: {
+                    wikiart: "https://www.wikiart.org/en/leonardo-da-vinci",
+                    zhenbaoguan: "https://www.zhonghuazhenbaoguan.com/world-artist/leonardo-da-vinci"
+                }
+            },
+            "pablo-picasso": {
+                name: "巴勃罗·毕加索",
+                birthDate: "1881年10月25日",
+                deathDate: "1973年4月8日",
+                nationality: "西班牙",
+                portrait: "https://bkimg.cdn.bcebos.com/pic/3801213fb80e7bec54e759f6d874ae389b504fc23d2b?x-bce-process=image/format,f_auto/watermark,image_d2F0ZXIvYmFpa2UyNzI,g_7,xp_5,yp_5,P_20/resize,m_lfit,limit_1,h_1080",
+                background: "https://ts1.tc.mm.bing.net/th/id/R-C.8c3559cdc696a1838317511458e87ff3?rik=RfWS0MAmuONi6A&riu=http%3a%2f%2fimg05.img.mei-shu.net%2fUploads%2fsjmh%2fpablo-picasso%2fzdw3ju1kldq.jpg%2fw1000&ehk=94BfEtjrFuHm2%2fLfuUGpuaMQSJrcsyL4aYOtt9Sqd8A%3d&risl=&pid=ImgRaw&r=0",
+                description: `
+                    巴勃罗·毕加索（1881年10月25日—1973年4月8日），西班牙画家、雕塑家、版画家、陶艺家和舞台设计师，是20世纪最具影响力的艺术家之一。他与乔治·布拉克共同开创了立体主义绘画风格，并对现代艺术的发展产生了深远影响。
+                    
+                    毕加索的艺术生涯漫长且多变，经历了蓝色时期、玫瑰时期、立体主义时期、古典主义时期、超现实主义时期等多个阶段。他的作品风格多样，包括油画、雕塑、版画、陶瓷等多种媒介。他的代表作《亚维农少女》被认为是立体主义的开山之作，而《格尔尼卡》则以其强烈的政治寓意和独特的艺术表现形式成为20世纪最著名的反战作品之一。
+                `,
+                works: [
+                    {
+                        name: "《亚维农少女》",
+                        type: "油彩、画布",
+                        image: "https://bkimg.cdn.bcebos.com/pic/aec379310a55b319eff45cbf4fa98226cefc17ee?x-bce-process=image/format,f_auto/watermark,image_d2F0ZXIvYmFpa2UyNzI,g_7,xp_5,yp_5,P_20/resize,m_lfit,limit_1,h_1080"
+                    },
+                    {
+                        name: "《格尔尼卡》",
+                        type: "油彩、画布",
+                        image: "https://bkimg.cdn.bcebos.com/pic/43a7d933c895d143a07b04607af082025aaf0767?x-bce-process=image/format,f_auto/watermark,image_d2F0ZXIvYmFpa2UyNzI,g_7,xp_5,yp_5,P_20/resize,m_lfit,limit_1,h_1080"
+                    },
+                    {
+                        name: "《镜前的少女》",
+                        type: "油彩、画布",
+                        image: "https://bkimg.cdn.bcebos.com/pic/bba1cd11728b4710657d224dc2cec3fdfd0323e5?x-bce-process=image/format,f_auto/watermark,image_d2F0ZXIvYmFpa2UyNzI,g_7,xp_5,yp_5,P_20/resize,m_lfit,limit_1,h_1080"
+                    }
+                ],
+                links: {
+                    wikiart: "https://www.wikiart.org/en/pablo-picasso",
+                    zhenbaoguan: "https://www.zhonghuazhenbaoguan.com/world-artist/pablo-picasso"
+                }
+            },
+            "vincent-van-gogh": {
+                name: "文森特·梵·高",
+                birthDate: "1853年3月30日",
+                deathDate: "1890年7月29日",
+                nationality: "荷兰",
+                portrait: "https://bkimg.cdn.bcebos.com/pic/d788d43f8794a4c28868033405f41bd5ad6e3962?x-bce-process=image/format,f_auto/watermark,image_d2F0ZXIvYmFpa2UyNzI,g_7,xp_5,yp_5,P_20/resize,m_lfit,limit_1,h_1080",
+                background: "https://bkimg.cdn.bcebos.com/pic/203fb80e7bec54e7655a0d1db2389b504fc26a7a?x-bce-process=image/format,f_auto/watermark,image_d2F0ZXIvYmFpa2UyNzI,g_7,xp_5,yp_5,P_20/resize,m_lfit,limit_1,h_1080",
+                description: `
+                    文森特·梵·高（1853年3月30日—1890年7月29日），荷兰后印象派画家，是19世纪最伟大的艺术家之一。尽管他的一生充满了贫困和精神困扰，但他的作品却以其独特的色彩、强烈的情感和充满活力的笔触对现代艺术产生了深远影响。
+                    
+                    梵·高的艺术生涯短暂而辉煌，仅持续了约十年，但他创作了超过2,100件作品，包括约860幅油画和大量的素描、水彩画。他的代表作包括《星夜》《向日葵》系列、《自画像》系列等。他的作品充满了对生命的热爱和对自然的敬畏，同时也表达了他内心的痛苦和孤独。
+                `,
+                works: [
+                    {
+                        name: "《星夜》",
+                        type: "油彩、画布",
+                        image: "https://ts1.tc.mm.bing.net/th/id/OIP-C.1KbcPxsskTdwY_KYLjEywAHaEo?rs=1&pid=ImgDetMain"
+                    },
+                    {
+                        name: "《向日葵》",
+                        type: "油彩、画布",
+                        image: "https://bkimg.cdn.bcebos.com/pic/4d086e061d950a7b0208277ba69875d9f2d3572c6370?x-bce-process=image/format,f_auto/watermark,image_d2F0ZXIvYmFpa2UyNzI,g_7,xp_5,yp_5,P_20/resize,m_lfit,limit_1,h_1080"
+                    },
+                    {
+                        name: "《自画像》",
+                        type: "油彩、画布",
+                        image: "https://bkimg.cdn.bcebos.com/pic/b7bc4c6695e78a32aa184c2c?x-bce-process=image/format,f_auto/watermark,image_d2F0ZXIvYmFpa2UyNzI,g_7,xp_5,yp_5,P_20/resize,m_lfit,limit_1,h_1080"
+                    }
+                ],
+                links: {
+                    wikiart: "https://www.wikiart.org/en/vincent-van-gogh",
+                    zhenbaoguan: "https://www.zhonghuazhenbaoguan.com/world-artist/vincent-van-gogh"
+                }
+            },
+            "claude-monet": {
+                name: "克劳德·莫奈",
+                birthDate: "1840年11月14日",
+                deathDate: "1926年12月5日",
+                nationality: "法国",
+                portrait: "https://bkimg.cdn.bcebos.com/pic/0b55b319ebc4b74543a9eb36b4b609178a82b901bff3?x-bce-process=image/format,f_auto/watermark,image_d2F0ZXIvYmFpa2UyNzI,g_7,xp_5,yp_5,P_20/resize,m_lfit,limit_1,h_1080",
+                background: "https://bkimg.cdn.bcebos.com/pic/6609c93d70cf3bc77bdc28bedd00baa1cc112a80",
+                description: `
+                    克劳德·莫奈（1840年11月14日—1926年12月5日），法国画家，印象派代表人物和创始人之一。他以细腻地捕捉光线和色彩的变化而闻名，尤其擅长描绘自然风景和水景。
+                    
+                    莫奈的作品强调对光线、色彩和瞬间印象的捕捉，而非传统绘画对细节的精确描绘。他常常在户外（en plein air）进行创作，以便直接观察和记录光线和色彩的变化。他的代表作《印象·日出》启发了印象派这个名称的由来。他后期创作的《睡莲》系列巨型组画，以其对光影和色彩的卓越掌控，成为印象派艺术的巅峰之作。
+                `,
+                works: [
+                    {
+                        name: "《印象·日出》",
+                        type: "油彩、画布",
+                        image: "https://tse1-mm.cn.bing.net/th/id/OIP-C.3Sn1nGKqyJGwwn_P-F9yKQHaFi?rs=1&pid=ImgDetMain"
+                    },
+                    {
+                        name: "《鲁昂大教堂》系列",
+                        type: "油彩、画布",
+                        image: "https://ts1.tc.mm.bing.net/th/id/R-C.b47e5a2ab5456152baa73d27a01d9890?rik=qKjn4l%2fBM1mptw&riu=http%3a%2f%2fn.sinaimg.cn%2fsinacn20%2f308%2fw1109h1599%2f20181021%2ff4b4-hmuuiyv4537095.jpg&ehk=7dwvik5FYWtkGdXyC0oO3d6pAqtJxH0CMrfM%2bdZ0Ut8%3d&risl=&pid=ImgRaw&r=0"
+                    },
+                    {
+                        name: "《睡莲》系列",
+                        type: "油彩、画布",
+                        image: "https://ts4.tc.mm.bing.net/th/id/OIP-C.-D-TaoCDBq1RHMrDgRpgZQHaFi?rs=1&pid=ImgDetMain"
+                    }
+                ],
+                links: {
+                    wikiart: "https://www.wikiart.org/en/claude-monet",
+                    zhenbaoguan: "https://www.zhonghuazhenbaoguan.com/world-artist/claude-monet"
+                }
+            },
+            "michelangelo": {
+                name: "米开朗基罗",
+                birthDate: "1475年3月6日",
+                deathDate: "1564年2月18日",
+                nationality: "意大利",
+                portrait: "https://bkimg.cdn.bcebos.com/pic/d31b0ef41bd5ad6eddc40590e8982edbb6fd52669634?x-bce-process=image/format,f_auto/watermark,image_d2F0ZXIvYmFpa2UyNzI,g_7,xp_5,yp_5,P_20/resize,m_lfit,limit_1,h_1080",
+                background: "https://tse1-mm.cn.bing.net/th/id/OIP-C.kFNWSzZMxzMNpT8FkAgO7wHaCG?rs=1&pid=ImgDetMain",
+                description: `
+                    米开朗基罗·博那罗蒂（1475年3月6日—1564年2月18日），意大利文艺复兴时期的雕塑家、画家、建筑师和诗人，与列奥纳多·达·芬奇和拉斐尔并称“文艺复兴三杰”。他的作品以其宏伟的规模、精湛的技艺和深刻的人文精神而著称。
+                    
+                    米开朗基罗的艺术生涯跨越了近八十年，创作了许多传世杰作。他的雕塑作品《大卫》以其完美的比例和强烈的表现力成为文艺复兴时期雕塑艺术的巅峰之作。他在梵蒂冈西斯廷教堂天花板上的壁画《创世纪》和祭坛墙上的《最后的审判》，以其宏大的叙事和震撼人心的视觉效果，成为西方艺术史上最伟大的壁画之一。
+                `,
+                works: [
+                    {
+                        name: "《大卫》",
+                        type: "大理石雕塑",
+                        image: "https://ts1.tc.mm.bing.net/th/id/R-C.597c470ee4fd62baa3a4a31bce58ab29?rik=JFJPVmtp4xOdqg&riu=http%3a%2f%2fimages.huanqiu.com%2fsarons%2f2013%2f08%2f131a9f228f6ebcb9768de6dab6f10684.jpg&ehk=EEuv2exfDUHdlps38h%2fXsuErO0JBN1lZ9Bv2hTEVNsk%3d&risl=&pid=ImgRaw&r=0"
+                    },
+                    {
+                        name: "《创世纪》",
+                        type: "湿壁画",
+                        image: "https://image.jiajiase.com/small6d0a07666dcb9e74becb5dc30919df4b.jpg"
+                    },
+                    {
+                        name: "《最后的审判》",
+                        type: "湿壁画",
+                        image: "https://ts1.tc.mm.bing.net/th/id/R-C.fe50d54a9a8bf5cd23351e2a15a153b3?rik=MDepFwvqecmL4g&riu=http%3a%2f%2f5b0988e595225.cdn.sohucs.com%2fimages%2f20190806%2f985a7a1dcd9b453fa5008959749065fa.jpeg&ehk=94DwiR9dKyP66qu5lqhacuoqBdRqyXzJtWmicPFaRMc%3d&risl=&pid=ImgRaw&r=0"
+                    }
+                ],
+                links: {
+                    wikiart: "https://www.wikiart.org/en/michelangelo",
+                    zhenbaoguan: "https://www.zhonghuazhenbaoguan.com/world-artist/michelangelo"
+                }
+            }
+        };
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', () => {
+            // 加载默认画家（齐白石）
+            loadArtist('qi-bai-shi');
+            
+            // 添加侧边栏点击事件
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    // 移除所有激活状态
+                    document.querySelectorAll('.sidebar-item').forEach(i => {
+                        i.classList.remove('active');
+                    });
+                    
+                    // 添加当前激活状态
+                    item.classList.add('active');
+                    
+                    // 加载对应画家
+                    const artistId = item.getAttribute('data-artist');
+                    loadArtist(artistId);
+                });
+            });
+            
+            // 添加搜索功能
+            const searchInput = document.getElementById('wikipedia-search');
+            const searchBtn = document.getElementById('search-btn');
+            
+            // 搜索按钮点击事件
+            searchBtn.addEventListener('click', () => {
+                performSearch();
+            });
+            
+            // 输入框回车事件
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
+            });
+        });
+
+        // 加载画家详情
+        function loadArtist(artistId) {
+            const artist = artists[artistId];
+            if (!artist) return;
+            
+            // 创建画家详情HTML
+            const detailHtml = `
+                <div class="relative h-64 md:h-80">
+                    <img src="${artist.background}" alt="${artist.name}" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end">
+                        <div class="p-6 md:p-8 text-white">
+                            <h3 class="text-2xl md:text-3xl font-bold">${artist.name}</h3>
+                            <p class="text-sm md:text-base text-gray-200">${artist.birthDate} - ${artist.deathDate}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="p-6 md:p-8">
+                    <div class="flex flex-col md:flex-row gap-6 mb-8">
+                        <div class="md:w-1/3">
+                            <img src="${artist.portrait}" alt="${artist.name}画像" class="w-full h-auto rounded-lg shadow-md">
+                        </div>
+                        <div class="md:w-2/3">
+                            <h4 class="text-xl font-semibold mb-4">简介</h4>
+                            <p class="text-gray-700 mb-4">
+                                ${artist.description}
+                            </p>
+                            <div class="flex flex-wrap gap-2 mt-4">
+                                <a href="${artist.links.wikiart}" target="_blank" class="text-primary text-sm flex items-center btn-hover">
+                                    <i class="fa-brands fa-wikipedia-w mr-1"></i> WikiArt
+                                </a>
+                                <a href="${artist.links.zhenbaoguan}" target="_blank" class="text-primary text-sm flex items-center btn-hover">
+                                    <i class="fa-solid fa-book-open mr-1"></i> 中华珍宝馆
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h4 class="text-xl font-semibold mb-6">代表作品</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        ${artist.works.map(work => `
+                            <div class="bg-white rounded-lg shadow-md overflow-hidden card-hover">
+                                <img src="${work.image}" alt="${work.name}" class="w-full h-48 object-cover">
+                                <div class="p-4">
+                                    <h5 class="font-medium">${work.name}</h5>
+                                    <p class="text-sm text-gray-500">${work.type}</p>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            
+            // 更新页面内容
+            document.getElementById('artist-detail').innerHTML = detailHtml;
+            
+            // 添加动画效果
+            const detailElement = document.getElementById('artist-detail');
+            detailElement.style.opacity = '0';
+            detailElement.style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                detailElement.style.opacity = '1';
+                detailElement.style.transform = 'translateY(0)';
+                detailElement.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            }, 50);
+        }
+        
+        // 执行搜索功能（跳转至百度百科）
+        function performSearch() {
+            const searchInput = document.getElementById('wikipedia-search');
+            const searchTerm = searchInput.value.trim();
+            
+            if (searchTerm) {
+                // 编码搜索词并跳转到百度百科
+                const encodedTerm = encodeURIComponent(searchTerm);
+                window.open(`https://baike.baidu.com/item/${encodedTerm}`, '_blank');
+            }
+        }
+    </script>
+</body>
+</html>    

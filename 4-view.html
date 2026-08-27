@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>用户评价页</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: url('图片集/竹鸟图.jpg') no-repeat center center fixed;
+            background-size: cover; 
+            font-family: "微软雅黑", sans-serif;
+        }
+
+        .review-container {
+            position: relative;
+            width: 600px; 
+            height: 100vh; 
+            margin: 0 auto; 
+            background: rgba(255, 255, 255, 0.9); 
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            overflow-y: auto; 
+            padding: 40px;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: #8B4513; /* 红棕色 */
+            color: white; /* 白字 */
+            border: none; 
+            padding: 8px 12px; 
+            font-size: 14px; 
+            cursor: pointer; 
+            border-radius: 2px; 
+            z-index: 10; 
+        }
+
+        .review-container h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+            color: #333;
+        }
+
+        .review-card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        .review-card .user-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .review-card .user-info img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .review-card .user-info span {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .review-card .content {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .review-card .actions {
+            display: flex;
+            align-items: center;
+            color: #999;
+        }
+
+        .review-card .actions span {
+            margin-right: 20px;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .review-card .actions span:hover {
+            color: #8B4513; 
+        }
+
+        .review-input {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        .review-input textarea {
+            width: 100%;
+            height: 80px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            padding: 10px;
+            resize: none;
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .review-input button {
+            background: #8B4513;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .review-input button:hover {
+            background: #8B4513;
+        }
+
+        @media (max-width: 768px) {
+            .review-container {
+                width: 100%;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 评价容器 -->
+    <div class="review-container">
+
+        <button class="back-btn" onclick="window.location.href='2-photo.html'">
+            返回识图
+        </button>
+
+        <h2>用户评价</h2>
+
+        <!-- 示例评价1 -->
+        <div class="review-card">
+            <div class="user-info">
+                <img src="作者/张择端.jpg" alt="用户头像">
+                <span>用户A</span>
+            </div>
+            <div class="content">这幅画的竹子特别有韵味，白鸽也画得很灵动，很喜欢！</div>
+            <div class="actions">
+                <span class="like" onclick="likeReview(this)">点赞 (12)</span>
+                <span onclick="replyReview(this)">回复</span>
+            </div>
+        </div>
+
+        <!-- 示例评价2 -->
+        <div class="review-card">
+            <div class="user-info">
+                <img src="作者/A.jpg" alt="用户头像">
+                <span>用户B</span>
+            </div>
+            <div class="content">工笔画的细腻体现得淋漓尽致，每片竹叶都像在动，绝了！</div>
+            <div class="actions">
+                <span class="like" onclick="likeReview(this)">点赞 (25)</span>
+                <span onclick="replyReview(this)">回复</span>
+            </div>
+        </div>
+
+        <div class="review-input">
+            <textarea placeholder="写下你的评价..."></textarea>
+            <button onclick="submitReview()">提交评价</button>
+        </div>
+    </div>
+
+    <script>
+        function likeReview(elem) {
+            let text = elem.textContent;
+            let num = parseInt(text.match(/\d+/)[0]);
+            num++;
+            elem.textContent = `点赞 (${num})`;
+        }
+
+        function replyReview(elem) {
+            alert('点击了回复~ 可扩展真实回复逻辑');
+        }
+
+        function submitReview() {
+            let textarea = document.querySelector('.review-input textarea');
+            let content = textarea.value.trim();
+            if (!content) return;
+
+            let newCard = document.createElement('div');
+            newCard.className = 'review-card';
+            newCard.innerHTML = `
+                <div class="user-info">
+                    <img src="作者/鸟.jpg" alt="用户头像">
+                    <span>你</span>
+                </div>
+                <div class="content">${content}</div>
+                <div class="actions">
+                    <span class="like" onclick="likeReview(this)">点赞 (0)</span>
+                    <span onclick="replyReview(this)">回复</span>
+                </div>
+            `;
+
+            let container = document.querySelector('.review-container');
+            container.insertBefore(newCard, document.querySelector('.review-input'));
+            
+            textarea.value = '';
+        }
+    </script>
+</body>
+</html>

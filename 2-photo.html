@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>上传照片</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#8B4513',  // 棕色
+                        secondary: '#B22222',  // 红色
+                        neutral: {
+                            100: '#F5F7FA',
+                            200: '#E4E6EB',
+                            300: '#C9CDD4',
+                            400: '#86909C',
+                            500: '#4E5969',
+                            600: '#272E3B',
+                            700: '#1D2129',
+                        }
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .btn-hover {
+                @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .backdrop-blur-sm {
+                backdrop-filter: blur(4px);
+            }
+            .input-focus {
+                @apply focus:ring-2 focus:ring-primary/50 focus:border-primary transition duration-200;
+            }
+        }
+    </style>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        .bg-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .bg-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            filter: brightness(0.95) saturate(1.1);
+        }
+        
+        .bg-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.4);
+        }
+        
+        .bg-gradient-red {
+            background: linear-gradient(135deg, #032271 0%, #014a16 100%);
+        }
+        
+        /* 按钮样式 */
+        .action-btn {
+            @apply px-6 py-3 rounded-lg font-medium transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2;
+        }
+        
+        .btn-primary {
+            @apply bg-primary text-white hover:bg-primary/90 focus:ring-primary/50;
+        }
+        
+        .btn-secondary {
+            @apply bg-neutral-200 text-neutral-700 hover:bg-neutral-300 focus:ring-neutral-400/50;
+        }
+        
+        .btn-tertiary {
+            @apply bg-secondary text-white hover:bg-secondary/90 focus:ring-secondary/50;
+        }
+        
+        /* 文本框样式 */
+        .review-textarea {
+            @apply px-5 py-4 rounded-lg border border-neutral-300 bg-white/95 backdrop-blur-sm text-neutral-700 input-focus resize-none;
+            min-height: 180px;
+            font-size: 1rem;
+            width: 800px; 
+            max-width: 90%; 
+            margin: 0 auto; 
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            width: 90%;
+            max-width: 400px;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+        }
+        
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: #1D2129;
+        }
+        
+        .modal-options {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .modal-option {
+            padding: 1rem;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid #E4E6EB;
+        }
+        
+        .modal-option:hover {
+            background-color: #F5F7FA;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .modal-option i {
+            font-size: 1.25rem;
+            width: 2rem;
+            text-align: center;
+        }
+        
+        .modal-camera {
+            color: #8B4513;
+        }
+        
+        .modal-gallery {
+            color: #630303;
+        }
+        
+        .modal-close {
+            margin-top: 1.5rem;
+            text-align: center;
+            color: #86909C;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+        
+        .modal-close:hover {
+            color: #4E5969;
+        }
+
+        .text-neutral-400 {
+        color: #9ca3af; 
+        }
+
+        @keyframes walk-in {
+            from {
+                transform: translate(-10%);
+            }
+            to {
+                transform: translateX(0);
+            }
+        }
+
+        #character-container.active {
+            display: block;
+            animation: walk-in 2s ease-out;
+        }
+
+        #chat-messages {
+            height: 600px;
+            overflow-y: auto;
+        }
+
+        #image-preview {
+            margin-top: 20px;
+            width: 100%;
+            height: 200px;
+            border: 1px solid #ccc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        #progress-bar {
+            margin-top: 20px;
+            width: 100%;
+            height: 20px;
+            background-color: #f3f3f3;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        #progress {
+            height: 100%;
+            background-color: #8B4513;
+            width: 0%;
+            text-align: center;
+            line-height: 20px;
+            color: white;
+        }
+
+        .back-btn {
+            background-color: #8B4513; 
+            color: white; 
+            border: none; 
+            padding: 8px 12px; 
+            font-size: 14px; 
+            cursor: pointer; 
+            border-radius: 2px; 
+            margin: 10px; 
+
+            border-radius: 2px; 
+            margin: 10px; 
+        }
+
+        .back-btn:hover {
+            opacity: 0.9; 
+        }
+
+        .voice-button {
+            position: absolute;
+            right: 10px;
+            top: 5px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .ai-message:hover .voice-button {
+            opacity: 1;
+        }
+
+        #voice-menu-template {
+            min-width: 120px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 relative font-inter">
+    <!-- 背景图片容器 -->
+    <div class="bg-container">
+        <img src="图片集/山水画.jpg" alt="背景图" class="bg-image">
+        <div class="bg-overlay"></div>
+    </div>
+    
+    <!-- 评价表单容器 -->
+    <div class="w-full max-w-2xl mx-auto" id="upload-container">
+        <!-- 评价表单卡片 -->
+        <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl p-8 md:p-10 border border-white/70">
+            <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-neutral-800 mb-10 text-center text-shadow">
+                一键识图
+            </h2>
+            
+            <div class="flex flex-col sm:flex-row justify-center gap-6">
+                <button id="submit-button" class="action-btn btn-primary btn-hover text-lg">
+                    <i class="fa-solid fa-paper-plane mr-2"></i>选择文件
+                </button>
+                <button id="skip-button" class="action-btn btn-secondary btn-hover text-lg">
+                    <i class="fa-solid fa-forward mr-2"></i>上传
+                </button>
+            </div>
+
+            <div id="image-preview">
+                <p class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-neutral-400 text-lg">图片预览</p>
+            </div>
+
+            <div id="progress-bar">
+                <div id="progress"></div>
+            </div>
+
+            <div id="result-container" class="mt-8 p-4 bg-white/90 rounded-lg shadow-md hidden">
+                <h3 class="text-lg font-semibold text-neutral-700 mb-4">解析结果</h3>
+                <div class="mb-2"><strong>作品描述：</strong> <span id="description"></span></div>
+                
+            </div>
+        </div>
+    </div>
+
+    <!-- 摄像头捕获容器 -->
+    <div id="camera-container" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-title">摄像头拍照</div>
+            <video id="camera-video" autoplay playsinline></video>
+            <button id="capture-button" class="action-btn btn-primary btn-hover text-lg mt-4">拍照</button>
+            <div id="close-camera" class="modal-close mt-4">取消</div>
+        </div>
+    </div>
+
+    <div id="file-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-title">选择图片来源</div>
+            <div class="modal-options">
+                <div id="camera-option" class="modal-option">
+                    <i class="fa-solid fa-camera modal-camera"></i>
+                    <span>拍照</span>
+                </div>
+                <div id="gallery-option" class="modal-option">
+                    <i class="fa-solid fa-images modal-gallery"></i>
+                    <span>图库</span>
+                </div>
+            </div>
+            <div id="close-modal" class="modal-close">
+                取消
+            </div>
+        </div>
+    </div>
+    
+    <!-- 隐藏的文件输入框 -->
+    <input type="file" id="file-input" accept="image/*" capture="camera" style="display: none;">
+    <input type="file" id="gallery-input" accept="image/*" style="display: none;">
+
+    <!-- 对话界面 -->
+    <div id="chat-container" class="hidden w-full max-w-2xl mx-auto mr-20">
+        <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl p-8 md:p-10 border border-white/70">
+            <button id="backBtn" class="back-btn absolute top-4 left-4">返回</button> 
+            <button id="reviewBtn" class="back-btn absolute top-4 right-4">留下评价</button> 
+            <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-neutral-800 mb-10 text-center text-shadow">与作者对话</h2>
+            <div id="chat-messages" class="mb-4 overflow-y-auto h-64 border border-neutral-300 rounded-lg p-4"></div>
+            <div id="voice-menu-template" class="hidden absolute bg-white shadow-lg rounded-md py-2 z-10">
+            <button class="voice-option px-4 py-2 hover:bg-gray-100 w-full text-left" data-lang="zh-CN">
+                <i class="fa-solid fa-language mr-2"></i>中文
+            </button>
+            <button class="voice-option px-4 py-2 hover:bg-gray-100 w-full text-left" data-lang="en-US">
+                <i class="fa-solid fa-language mr-2"></i>English
+            </button>
+        </div>
+            <div class="flex">
+                <input type="text" id="chat-input" class="flex-1 px-5 py-4 rounded-lg border border-neutral-300 bg-white/95 backdrop-blur-sm text-neutral-700 input-focus" placeholder="输入你的消息">
+                <button id="send-message" class="action-btn btn-primary btn-hover text-lg ml-4">发送</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 人物动画 -->
+    <div id="character-container" class="hidden absolute left-0 w-100 h-100">
+        <img src="作者/古代人.png" alt="人物" class="w-full h-full">
+    </div>
+    
+    <script>
+        const submitButton = document.getElementById('submit-button');
+        const fileModal = document.getElementById('file-modal');
+        const closeModal = document.getElementById('close-modal');
+        const cameraOption = document.getElementById('camera-option');
+        const galleryOption = document.getElementById('gallery-option');
+        const fileInput = document.getElementById('file-input');
+        const galleryInput = document.getElementById('gallery-input');
+        const skipButton = document.getElementById('skip-button');
+
+        const cameraContainer = document.getElementById('camera-container');
+        const cameraVideo = document.getElementById('camera-video');
+        const captureButton = document.getElementById('capture-button');
+        const closeCamera = document.getElementById('close-camera');
+
+        const uploadContainer = document.getElementById('upload-container');
+        const chatContainer = document.getElementById('chat-container');
+        const chatMessages = document.getElementById('chat-messages');
+        const chatInput = document.getElementById('chat-input');
+        const sendMessageButton = document.getElementById('send-message');
+        const imagePreview = document.getElementById('image-preview');
+        const progressBar = document.getElementById('progress');
+        const backBtn = document.getElementById('backBtn'); 
+        const reviewBtn = document.getElementById('reviewBtn');
+
+        // 点击事件：跳转到评价页面
+        reviewBtn.addEventListener('click', () => {
+        window.location.href = '3-comment.html'; 
+        });  
+
+        backBtn.addEventListener('click', () => {
+            chatContainer.classList.add('hidden');
+            uploadContainer.style.display = 'block';
+            
+            fileInput.value = '';
+            galleryInput.value = '';
+            imagePreview.innerHTML = `
+                <p class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-neutral-400 text-lg">图片预览</p>
+            `;
+            progressBar.style.width = '0%';
+            progressBar.textContent = '';
+            skipButton.innerHTML = '<i class="fa-solid fa-forward mr-2"></i>上传';
+            skipButton.disabled = false;
+            
+            document.getElementById('character-container').classList.remove('active');
+        });
+
+        // 打开摄像头
+        cameraOption.addEventListener('click', async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                cameraVideo.srcObject = stream;
+                cameraContainer.style.display = 'flex';
+                fileModal.classList.remove('active');
+            } catch (error) {
+                console.error('无法访问摄像头:', error);
+                alert('无法访问摄像头，请检查权限设置');
+            }
+        });
+
+        // 拍照
+        captureButton.addEventListener('click', () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = cameraVideo.videoWidth;
+            canvas.height = cameraVideo.videoHeight;
+            const context = canvas.getContext('2d');
+            context.drawImage(cameraVideo, 0, 0, canvas.width, canvas.height);
+
+            canvas.toBlob((blob) => {
+                const file = new File([blob], 'photo.jpg', { type: 'image/jpeg' });
+                handleFileSelect({ target: { files: [file] } });
+                closeCamera.click();
+            }, 'image/jpeg');
+        });
+
+        // 关闭摄像头
+        closeCamera.addEventListener('click', () => {
+            const stream = cameraVideo.srcObject;
+            if (stream) {
+                const tracks = stream.getTracks();
+                tracks.forEach(track => track.stop());
+            }
+            cameraVideo.srcObject = null;
+            cameraContainer.style.display = 'none';
+        });
+
+        // 点击摄像头容器外部关闭
+        cameraContainer.addEventListener('click', (e) => {
+            if (e.target === cameraContainer) {
+                closeCamera.click();
+            }
+        });
+
+        // 打开模态框
+        submitButton.addEventListener('click', () => {
+            fileModal.classList.add('active');
+            setTimeout(() => {
+                fileModal.querySelector('.modal-content').classList.add('scale-100');
+                fileModal.querySelector('.modal-content').classList.remove('scale-95');
+            }, 10);
+        });
+        
+        // 关闭模态框
+        closeModal.addEventListener('click', () => {
+            fileModal.classList.remove('active');
+            fileInput.value = '';
+            galleryInput.value = '';
+        });
+        
+        // 点击模态框外部关闭
+        fileModal.addEventListener('click', (e) => {
+            if (e.target === fileModal) {
+                closeModal.click();
+            }
+        });
+        
+        // 拍照选项
+        cameraOption.addEventListener('click', () => {
+            fileInput.click();
+            fileModal.classList.remove('active');
+        });
+        
+        // 图库选项
+        galleryOption.addEventListener('click', () => {
+            galleryInput.click();
+            fileModal.classList.remove('active');
+        });
+        
+        // 文件选择处理
+        fileInput.addEventListener('change', handleFileSelect);
+        galleryInput.addEventListener('change', handleFileSelect);
+        
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (file) {
+                console.log('Selected file:', file);
+                previewImage(file);
+            }
+        }
+        
+        // 图片预览功能
+        function previewImage(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('image-preview').innerHTML = `<img src="${e.target.result}" alt="预览图" class="w-full h-full object-cover">`; 
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        // 修改上传按钮逻辑
+        skipButton.addEventListener('click', async () => {
+            const selectedFile = fileInput.files[0] || galleryInput.files[0];
+            if (!selectedFile) {
+                alert('请先选择图片');
+                return;
+            }
+
+            // 显示加载状态
+            skipButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>上传中...';
+            skipButton.disabled = true;
+
+            try {
+                // 调用后端API上传图片并获取解析结果
+                const response = await uploadFileToBackend(selectedFile);
+
+                const characterContainer = document.getElementById('character-container');
+                characterContainer.classList.add('active');
+
+                uploadContainer.style.display = 'none';
+                chatContainer.classList.remove('hidden');
+
+                const welcomeMessage = '久仰大名，今日得见，某愿为君剖析此画之奥理';
+                await typeMessage('作者', welcomeMessage);
+
+                const resultMessage = `图片识别结果：描述 - ${response.artwork_info.description}`;
+                addMessage('作者', resultMessage);
+
+            } catch (error) {
+                console.error('上传失败:', error);
+                alert('上传失败，请重试');
+            } finally {
+                skipButton.innerHTML = '<i class="fa-solid fa-forward mr-2"></i>上传';
+                skipButton.disabled = false;
+            }
+        });
+
+        async function uploadFileToBackend(file) {
+            const formData = new FormData();
+            formData.append('image', file, file.name);
+
+            const progressBar = document.getElementById('progress');
+            progressBar.style.width = '0%';
+            
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += 5; 
+                progressBar.style.width = `${progress}%`;
+                
+                if (progress >= 100) {
+                clearInterval(progressInterval);
+                }
+            }, 1000); 
+
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', 'http://localhost:5000/upload', true);
+                
+                xhr.onreadystatechange = () => {
+                if (xhr.readyState === 4) {
+                    clearInterval(progressInterval); 
+                    if (xhr.status === 200) {
+                    resolve(JSON.parse(xhr.responseText));
+                    } else {
+                    reject(new Error('上传失败'));
+                    }
+                }
+                };
+                
+                xhr.send(formData);
+            });
+            }
+            
+
+        // 发送消息到后端
+        sendMessageButton.addEventListener('click', async () => {
+            const message = chatInput.value.trim();
+            if (message) {
+                addMessage('用户', message);
+                chatInput.value = '';
+
+                try {
+                    const response = await fetch('http://localhost:5000/chat', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ message })
+                    });
+
+                    if (!response.ok) throw new Error('后端响应失败');
+                    const data = await response.json();
+                    addMessage('作者', data.message);
+                } catch (error) {
+                    console.error('对话请求失败:', error);
+                    addMessage('作者', '对话请求失败，请重试');
+                }
+            }
+        });
+
+        let currentVoiceUtterance = null;
+        let currentVoiceButton = null;
+
+        // 语音播报函数 
+        function speakText(text, lang = 'zh-CN', onEnd = null) {
+            stopSpeaking();
+
+            const synth = window.speechSynthesis;
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = lang;
+            
+            // 设置语速和音调，使语音更自然
+            utterance.rate = 0.9; // 稍微慢一点
+            utterance.pitch = 1;  // 正常音调
+            
+            // 语音结束回调
+            utterance.onend = () => {
+                if (currentVoiceButton) {
+                    currentVoiceButton.classList.remove('fa-spin');
+                    currentVoiceButton.classList.add('fa-volume-up');
+                }
+                if (onEnd) onEnd();
+            };
+            
+            utterance.onerror = (event) => {
+                console.error('语音播放错误:', event);
+                if (currentVoiceButton) {
+                    currentVoiceButton.classList.remove('fa-spin');
+                    currentVoiceButton.classList.add('fa-volume-up');
+                }
+            };
+            
+            synth.speak(utterance);
+            currentVoiceUtterance = utterance;
+        }
+
+        // 停止当前语音
+        function stopSpeaking() {
+            if (currentVoiceUtterance) {
+                window.speechSynthesis.cancel();
+                currentVoiceUtterance = null;
+            }
+            if (currentVoiceButton) {
+                currentVoiceButton.classList.remove('fa-spin');
+                currentVoiceButton.classList.add('fa-volume-up');
+            }
+            currentVoiceButton = null;
+        }
+
+        // 处理语音按钮点击
+        function handleVoiceButtonClick(event) {
+            const voiceButton = event.currentTarget;
+            const messageElement = voiceButton.closest('.ai-message');
+            const messageText = messageElement.textContent.replace('作者:', '').trim();
+            
+            if (currentVoiceUtterance && !window.speechSynthesis.paused) {
+                // 如果正在播放，停止语音
+                stopSpeaking();
+                voiceButton.classList.remove('fa-spin', 'fa-circle-notch');
+                voiceButton.classList.add('fa-volume-up');
+            } else {
+                // 如果没有播放，开始语音
+                stopSpeaking();
+            
+            
+            // 更新当前语音按钮状态
+            currentVoiceButton = voiceButton;
+            voiceButton.classList.remove('fa-volume-up');
+            voiceButton.classList.add('fa-spin', 'fa-circle-notch');
+            
+            // 播放中文语音
+            speakText(messageText, 'zh-CN', () => {
+                currentVoiceButton = null;
+            });
+          }
+        }
+
+        function addMessage(sender, message) {
+            let formattedMessage = message.replace(/\n/g, '<br>'); 
+            formattedMessage = formattedMessage.replace(/##\s+/g, '<h3>');
+            formattedMessage = formattedMessage.replace(/\n#+/g, '</h3>');
+            formattedMessage = formattedMessage.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            formattedMessage = formattedMessage.replace(/^#\s*(\d+)\.\s*/gm, '<li>$1. ');
+            formattedMessage = formattedMessage.replace(/^-\s*/gm, '<li>- ');
+            formattedMessage = '<ol>' + formattedMessage + '</ol>'; 
+            formattedMessage = formattedMessage.replace(/\s*#+\s*/g, '');
+
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('mb-2');
+            // 根据发送者添加不同样式类名，方便区分用户和AI消息样式
+            if (sender === '用户') {
+                messageElement.classList.add('user-message');
+                messageElement.innerHTML = `<strong>${sender}:</strong> ${formattedMessage}`;
+            } else {
+                messageElement.classList.add('ai-message');
+                messageElement.innerHTML = `
+                    <div class="flex items-start">
+                        <div class="mr-2 mt-1">
+                            <i class="fa-solid fa-user-circle text-neutral-500"></i>
+                        </div>
+                        <div>
+                            <strong>${sender}:</strong> ${formattedMessage}
+                            <button class="voice-button ml-2 text-neutral-400 hover:text-blue-500 transition-colors">
+                                <i class="fa-solid fa-volume-up"></i>
+                            </button>
+                        </div>
+                    </div>
+        `       ;
+                
+                const voiceButton = messageElement.querySelector('.voice-button');
+                voiceButton.addEventListener('click', handleVoiceButtonClick);
+            }
+
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }    
+        
+        messageElement.innerHTML = `<strong>${sender}:</strong> ${formattedMessage}`;
+        document.addEventListener('DOMContentLoaded', () => {
+        
+        window.addEventListener('scroll', () => {
+            document.getElementById('voice-menu-template').classList.add('hidden');
+        });
+    });
+
+        // 逐字输出消息的函数
+        async function typeMessage(sender, message) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('mb-2');
+            if (sender === '用户') {
+                messageElement.classList.add('user-message');
+            } else {
+                messageElement.classList.add('ai-message');
+            }
+            messageElement.innerHTML = `<strong>${sender}:</strong> `;
+            chatMessages.appendChild(messageElement);
+
+            for (let i = 0; i < message.length; i++) {
+                await new Promise(resolve => setTimeout(resolve, 50)); 
+                messageElement.innerHTML += message[i];
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        }
+    </script>
+</body>
+</html>

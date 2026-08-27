@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>博物馆搜索</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#8B4513',  // 棕色
+                        secondary: '#B22222',  // 红色
+                        neutral: {
+                            100: '#F5F7FA',
+                            200: '#E4E6EB',
+                            300: '#C9CDD4',
+                            400: '#86909C',
+                            500: '#4E5969',
+                            600: '#272E3B',
+                            700: '#1D2129',}
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .btn-hover {
+                @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+            }
+            .card-hover {
+                @apply transition-all duration-300 hover:shadow-xl hover:-translate-y-2;
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="font-inter bg-neutral text-dark min-h-screen flex flex-col">
+    <!-- 导航栏 -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-paint-brush text-primary text-2xl"></i>
+                <h1 class="text-xl font-bold text-primary">艺术探索</h1>
+            </div>
+            <nav class="hidden md:flex space-x-8">
+                <a href="index.html" class="text-dark hover:text-primary transition-colors duration-300">首页</a>
+                <a href="#" class="text-dark hover:text-primary transition-colors duration-300">关于我们</a>
+                <a href="#" class="text-dark hover:text-primary transition-colors duration-300">联系我们</a>
+            </nav>
+            <button class="md:hidden text-dark text-xl">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- 主要内容 -->
+    <main class="flex-grow container mx-auto px-4 py-12">
+        <div class="text-center mb-12">
+            <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-4 text-dark">博物馆搜索</h2>
+            <p class="text-[clamp(1rem,1.5vw,1.1rem)] text-gray-600 max-w-2xl mx-auto">
+                输入博物馆名称，探索全球知名艺术场馆的官方网站
+            </p>
+        </div>
+
+        <!-- 搜索框 -->
+        <div class="max-w-2xl mx-auto mb-12">
+            <div class="relative">
+                <input 
+                    type="text" 
+                    id="search-input" 
+                    placeholder="输入博物馆名称..." 
+                    class="w-full px-6 py-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-300"
+                >
+                <button 
+                    id="search-button" 
+                    class="absolute right-2 top-2 bg-primary text-white px-4 py-2 rounded-lg btn-hover"
+                >
+                    <i class="fa-solid fa-search mr-2"></i>搜索
+                </button>
+            </div>
+        </div>
+
+        <!-- 加载状态 -->
+        <div id="loading" class="text-center py-12 hidden">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            <p class="mt-4 text-gray-600">正在查找博物馆...</p>
+        </div>
+
+        <!-- 无结果提示 -->
+        <div id="no-results" class="text-center py-12 hidden">
+            <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fa-solid fa-search text-gray-400 text-3xl"></i>
+            </div>
+            <h3 class="text-xl font-semibold mb-2">没有找到结果</h3>
+            <p class="text-gray-600 max-w-md mx-auto">
+                抱歉，没有找到与“<span id="search-term" class="font-medium"></span>”相关的博物馆。请尝试其他关键词。
+            </p>
+        </div>
+    </main>
+
+    <footer class="bg-dark text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <i class="fa-solid fa-paint-brush text-primary text-2xl"></i>
+                        <h3 class="text-xl font-bold">艺术探索</h3>
+                    </div>
+                    <p class="text-gray-400 text-sm">探索艺术的世界，发现美的真谛</p>
+                </div>
+
+                <div>
+                    <h4 class="font-semibold mb-4">快速链接</h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="index.html" class="hover:text-primary transition-colors duration-300">首页</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors duration-300">关于我们</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors duration-300">联系我们</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-white/10 mt-8 pt-8 text-center text-gray-400 text-sm">
+                <p>&copy; 2025 艺术探索. 保留所有权利.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 预定义博物馆数据（博物馆名称和官网链接）
+        const museumLinks = {
+            "卢浮宫": "https://www.louvre.fr/",
+            "大都会艺术博物馆": "https://www.metmuseum.org/",
+            "大英博物馆": "https://www.britishmuseum.org/",
+            "故宫博物院": "https://www.dpm.org.cn/",
+            "梵蒂冈博物馆": "https://www.museivaticani.va/",
+            "普拉多博物馆": "https://www.museodelprado.es/",
+            "艾尔米塔什博物馆": "https://www.hermitagemuseum.org/",
+            "奥赛博物馆": "https://www.musee-orsay.fr/",
+            "泰特现代艺术博物馆": "https://www.tate.org.uk/"
+        };
+
+        // 获取DOM元素
+        const searchInput = document.getElementById('search-input');
+        const searchButton = document.getElementById('search-button');
+        const loading = document.getElementById('loading');
+        const noResults = document.getElementById('no-results');
+        const searchTerm = document.getElementById('search-term');
+
+        // 搜索功能
+        function performSearch() {
+            const query = searchInput.value.trim();
+
+            if (query === '') return;
+
+            // 显示加载状态
+            loading.classList.remove('hidden');
+            noResults.classList.add('hidden');
+
+            setTimeout(() => {
+                loading.classList.add('hidden');
+                
+                // 检查是否有匹配的博物馆链接
+                const museumURL = museumLinks[query];
+
+                if (museumURL) {
+                    // 如果找到匹配的博物馆，直接跳转到官网
+                    window.location.href = museumURL;
+                } else {
+                    // 如果没有匹配的博物馆，使用必应进行搜索
+                    window.location.href = `https://www.bing.com/search?q=${encodeURIComponent(query)}+官网`;
+                }
+            }, 1000);
+        }
+
+        // 添加事件监听器
+        searchButton.addEventListener('click', performSearch);
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+    </script>
+</body>
+</html>
